@@ -98,7 +98,10 @@ HTMLWidgets.widget({
         // set the data items and groups
         timeline.itemsData.clear();
         timeline.itemsData.add(opts.items);
-        timeline.setGroups(opts.groups);
+        if (opts.groups) {
+          opts.groups = fixNestedGroups(opts.groups);
+          timeline.setGroups(opts.groups);
+        }
 
         // fit the items on the timeline
         if (opts.fit) {
@@ -215,6 +218,7 @@ HTMLWidgets.widget({
       },
       setGroups : function(params) {
         timeline.groupsData.clear();
+        params.data = fixNestedGroups(params.data);
         timeline.groupsData.add(params.data);
       },
       setOptions : function(params) {
@@ -229,6 +233,19 @@ HTMLWidgets.widget({
     };
   }
 });
+
+// nested groups info needs to be parsed out of JSON and
+// remove any single quotes since JSON won't parse them
+var fixNestedGroups = function(data) {
+  for (var i = 0; i < data.length; i++) {
+    if ('nestedGroups' in data[i]) {
+      data[i].nestedGroups = JSON.parse(
+        data[i].nestedGroups.replace(/'/g, '"')
+      );
+    }
+  }
+  return data;
+}
 
 // Attach message handlers if in shiny mode (these correspond to API)
 if (HTMLWidgets.shinyMode) {
